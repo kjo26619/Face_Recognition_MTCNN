@@ -122,3 +122,40 @@ Log Loss 형태를 가지며 Cross-Entropy Loss를 채택했습니다.
 
 ![loss2](https://latex.codecogs.com/gif.latex?L%5E%7Bbox%7D_i%3D%5Cleft%20%5C%7C%20%5Chat%7By%7D%5E%7Bbox%7D_i%20-%20y_i%5E%7Bbox%7D%20%5Cright%20%5C%7C%5E2_2)
 
+## Facial Lanmark Localizaiton Loss Function
+
+Bounding Box와 유사하게 Euclidean Loss Function을 채택했으며 총 5개의 Landmark 즉, 10개의 원소(각각 x, y)를 갖습니다.
+
+5개의 Lanamrk는 왼쪽 눈, 오른쪽 눈, 코, 왼쪽 입 끝, 오른쪽 입 끝입니다.
+
+## Multi-Source Training
+
+이제 학습을 위해서 각 네트워크(P-Net, R-Net, O-Net)마다 가중치를 두어서 Loss Function을 합한 뒤 이를 최소화하는 방향으로 학습합니다.
+
+이를 수식으로 나타내면 다음과 같습니다.
+
+![loss3](https://latex.codecogs.com/gif.latex?%5Ctextup%7Bmin%7D%20%5Csum_%7Bi%3D1%7D%5EN%20%5Csum_%7Bj%5Cin%20%5Cleft%20%5C%7B%20det%2C%20box%2C%20landmark%20%5Cright%20%5C%7D%7D%20%5Calpha_j%20%5Cbeta_i%5Ej%20L%5Ej_i)
+
+여기서, N은 샘플의 수를 의미하며 ![alpha](https://latex.codecogs.com/gif.latex?\alpha_j)는 작업 중요도를 의미합니다.
+
+논문에서 각 네트워크마다 P-Net과 R-Net은 ![import1](https://latex.codecogs.com/gif.latex?%5Calpha_%7Bdet%7D%20%3D1%2C%20%5Calpha_%7Bbox%7D%20%3D0.5%2C%20%5Calpha_%7Blandmark%7D%20%3D0.5) 를 사용하였고, O-Net은 ![import2](https://latex.codecogs.com/gif.latex?%5Calpha_%7Bdet%7D%20%3D1%2C%20%5Calpha_%7Bbox%7D%20%3D0.5%2C%20%5Calpha_%7Blandmark%7D%20%3D1)를 사용하였습니다.
+
+그리고 ![beta](https://latex.codecogs.com/gif.latex?\beta^i_j)는 샘플 타입을 나타내는 것으로 0,1의 값을 갖습니다.
+
+그리고 Stochastic Gradient Descent를 택해서 CNN을 학습합니다.
+
+## Online Hard Sample Mining
+
+학습을 지속적으로 진행하는 온라인 학습을 사용하며 Positive 및 Negative 샘플의 Loss를 고려한 방식입니다.
+
+학습하기 어려운 Negative 샘플을 집중적으로 학습시킴으로써 더욱 효율적인 학습이 되도록 합니다.
+
+이미지에서는 무수하게 많은 RoI(Region of Interest)들 중 Loss가 높은 RoI들을 선택하여 학습시키는 방법입니다.
+
+# Code
+
+MTCNN의 구현은 Facenet을 통해서 구현되어 있습니다. 
+
+자세한 사용법도 같이 나와있으므로 참조하시면 됩니다.
+
+https://github.com/timesler/facenet-pytorch
